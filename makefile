@@ -42,3 +42,7 @@ deploy-nftPurchase:
 
 deploy-withDraw:
 	@forge script script/interactions.s.sol:WithDrwaTokens  --rpc-url $(RPC_URL) --private-key $(PRIVATE_KEY) --broadcast -vvvvv
+
+t-nft:
+	@forge test --match-path test/TestDenverNFT.t.sol -vvvvv
+

@@ -22,9 +22,9 @@ contract DenverNFT is ERC721 {
     address private tokensWithDrawAddress;
 
     ////////////////////////////////////////////////
-               // view functions
+    // view functions
     ///////////////////////////////////////////////
-    function getMSB_token() public view returns (address){
+    function getMSB_token() public view returns (address) {
         return msbToken;
     }
 
@@ -39,7 +39,6 @@ contract DenverNFT is ERC721 {
     function getNFTCost(uint256 _tokenId) public view returns (uint256) {
         return nftCost[_tokenId];
     }
-
 
     // SVG generation parameters
     string[] private backgroundColors = ["6385DF", "A3FF47", "FF4F4F", "FFFFFF"];
@@ -71,7 +70,7 @@ contract DenverNFT is ERC721 {
     }
 
     function purchaseNFT(address _to, string memory _specialAttribute) public {
-        require(token.balanceOf(msg.sender) >= 5 * 1e18, "you have to spend 5 MSB tokens");
+        require(token.balanceOf(msg.sender) >= 5 * 1e18, "Insufficient token balance");
         require(
             token.allowance(msg.sender, address(this)) >= 5 * 1e18, "the allowance is too low to perform transaction"
         );
@@ -89,16 +88,9 @@ contract DenverNFT is ERC721 {
             isTradable: false,
             visualTraits: visualTraits
         });
+
+        nftCost[s_tokenCounter] = 5 * 1e18;
         s_tokenCounter++;
-    }
-
-    function generateTraits(uint256 tokenId) internal view returns (bytes8) {
-        // Use tokenId and block data to generate deterministic but unique traits
-        return bytes8(keccak256(abi.encodePacked(tokenId, block.prevrandao, block.timestamp)));
-    }
-
-    function setLastPrice(uint256 _tokenId, uint256 _amount) internal {
-        nftFeatures[_tokenId].lastPrice = _amount;
     }
 
     function withDrawTokens() public onlyWithDrawAddress {
@@ -122,13 +114,13 @@ contract DenverNFT is ERC721 {
     // }
 
     function makeNFT_Tradable(uint256 _tokenId) public {
-        require(ownerOf(_tokenId) != msg.sender && ownerOf(_tokenId) != address(0), "you are not owner of this nft");
+        require(ownerOf(_tokenId) == msg.sender && ownerOf(_tokenId) != address(0), "you are not owner of this nft");
         require(nftFeatures[_tokenId].isTradable == false, "it is already tradable nft");
         nftFeatures[_tokenId].isTradable = true;
     }
 
     function makeNFT_Not_Tradable(uint256 _tokenId) public {
-        require(ownerOf(_tokenId) != msg.sender && ownerOf(_tokenId) != address(0), "you are not owner of this nft");
+        require(ownerOf(_tokenId) == msg.sender && ownerOf(_tokenId) != address(0), "you are not owner of this nft");
         require(nftFeatures[_tokenId].isTradable == true, "it is already not tradable nft");
         nftFeatures[_tokenId].isTradable = false;
     }
@@ -137,6 +129,7 @@ contract DenverNFT is ERC721 {
         require(ownerOf(_tokenId) != msg.sender && ownerOf(_tokenId) != address(0), "you are not able to buy NFT");
         require(nftCost[_tokenId] >= nftCost[_tokenId], "insufficient amount");
         require(nftFeatures[_tokenId].isTradable == true, "nft is not tradable");
+        require(token.allowance(msg.sender,ownerOf(_tokenId)) >= nftCost[_tokenId], "allowance is too low");
         bool success = token.transferFrom(msg.sender, ownerOf(_tokenId), nftCost[_tokenId]);
         require(success, "Failed to buy NFT");
         setLastPrice(_tokenId, nftCost[_tokenId]);
@@ -217,4 +210,12 @@ contract DenverNFT is ERC721 {
         return string(abi.encodePacked("data:application/json;base64,", Base64.encode(bytes(json))));
     }
 
-  }
+    function generateTraits(uint256 tokenId) internal view returns (bytes8) {
+        // Use tokenId and block data to generate deterministic but unique traits
+        return bytes8(keccak256(abi.encodePacked(tokenId, block.prevrandao, block.timestamp)));
+    }
+
+    function setLastPrice(uint256 _tokenId, uint256 _amount) internal {
+        nftFeatures[_tokenId].lastPrice = _amount;
+    }
+}
