@@ -135,7 +135,7 @@ contract DenverNFT is ERC721 {
 
     function buyAlreadyOwnedNFT(uint256 _tokenId) public {
         require(ownerOf(_tokenId) != msg.sender && ownerOf(_tokenId) != address(0), "you are not able to buy NFT");
-        require(nftCost[_tokenId] >= nftC   ost[_tokenId], "insufficient amount");
+        require(nftCost[_tokenId] >= nftCost[_tokenId], "insufficient amount");
         require(nftFeatures[_tokenId].isTradable == true, "nft is not tradable");
         bool success = token.transferFrom(msg.sender, ownerOf(_tokenId), nftCost[_tokenId]);
         require(success, "Failed to buy NFT");
